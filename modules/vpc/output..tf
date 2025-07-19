@@ -34,3 +34,8 @@ output "main_route_table_id" {
 output "secondary_cidr_blocks" {
   value = module.vpc.vpc_secondary_cidr_blocks
 }
+
+output "rfc6598_subnet_ids" {
+  description = "List of RFC6598 subnet IDs created for EKS workloads."
+  value       = module.vpc_eks_private.rfc6598_subnet_ids
+}

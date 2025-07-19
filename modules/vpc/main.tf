@@ -72,6 +72,7 @@ module "vpc" {
 }
 
 module "vpc_eks_private" {
+  #source = "../vpc_eks_private"
   source = "git::https://github.com/Kamilu-Nurudeen/eldurn-cluster.git//modules/vpc_eks_private"
 
   name   = var.name

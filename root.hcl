@@ -7,6 +7,7 @@ locals {
   aws_region       = local.region_vars.locals.aws_region
   aws_account_id   = local.account_vars.locals.aws_account_id
   assume_role_name = local.account_vars.locals.assume_role_name
+  cluster_name     = local.env_vars.locals.name
 
   tags = {
     "managed_by"        = "terraform"
@@ -41,7 +42,9 @@ provider "helm" {
         "eks",
         "get-token",
         "--cluster-name",
-        var.cluster_id,
+        "${local.cluster_name}",
+        "--region",
+        "${local.aws_region}",
         "--role",
         "arn:aws:iam::${local.aws_account_id}:role/${local.assume_role_name}",
       ]
@@ -78,3 +81,4 @@ inputs = merge(
     tags = local.tags
   }
 )
+
