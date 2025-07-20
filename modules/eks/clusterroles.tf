@@ -17,3 +17,11 @@ resource "aws_eks_access_policy_association" "developers_view" {
     type = "cluster"
   }
 }
+
+resource "aws_eks_access_entry" "karpenter" {
+  cluster_name  = module.eks.cluster_name
+  principal_arn = "arn:aws:iam::${var.account_id}:role/KarpenterNodes-${module.eks.cluster_name}"
+  type          = "EC2_LINUX"
+
+  depends_on = [module.eks]
+}

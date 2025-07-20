@@ -26,33 +26,35 @@ inputs = {
   vpc_cni_addon_version                = "v1.19.6-eksbuild.7"
   cluster_addon_coredns_version        = "v1.12.2-eksbuild.4"
 
-  default-node-group = {
-    min_size     = 1
-    max_size     = 2
-    desired_size = 1
-    update_config = {
-      max_unavailable_percentage = 10
-    }
-    instance_types               = ["r5b.2xlarge"]
-    create_security_group        = false
-    iam_role_additional_policies = {
-      "AmazonEBSCSIDriverPolicy" = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-    }
-    block_device_mappings = {
-      xvda = {
-        device_name = "/dev/xvda"
-        ebs = {
-          volume_size           = 100
-          volume_type           = "gp3"
-          iops                  = 3000
-          throughput            = 150
-          encrypted             = true
-          delete_on_termination = true
+  eks_managed_node_groups = {
+    default = {
+      min_size     = 1
+      max_size     = 2
+      desired_size = 1
+      update_config = {
+        max_unavailable_percentage = 10
+      }
+      instance_types               = ["r5b.2xlarge"]
+      create_security_group        = false
+      iam_role_additional_policies = {
+        "AmazonEBSCSIDriverPolicy" = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
+      }
+      block_device_mappings = {
+        xvda = {
+          device_name = "/dev/xvda"
+          ebs = {
+            volume_size           = 100
+            volume_type           = "gp3"
+            iops                  = 3000
+            throughput            = 150
+            encrypted             = true
+            delete_on_termination = true
+          }
         }
       }
-    }
-    labels = {
-      "node-group" = "default"
+      labels = {
+        "node-group" = "default"
+      }
     }
   }
 
