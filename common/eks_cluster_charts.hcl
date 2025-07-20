@@ -8,6 +8,7 @@ locals {
   aws_region                 = local.region_vars.locals.aws_region
   aws_account_id             = local.account_vars.locals.aws_account_id
   assume_role_name           = local.account_vars.locals.assume_role_name
+  cluster_name               = local.env_vars.locals.name
 }
 
 dependency "eks" {
@@ -35,28 +36,29 @@ dependency "vpc" {
   mock_outputs_merge_with_state = true
 }
 
-generate "provider-local.tf" {
-  path      = "provider-local.tf"
+
+generate "provider_helm" {
+  path      = "provider_helm.tf"
   if_exists = "overwrite_terragrunt"
   contents  = <<EOF
-provider "kubernetes" {
-  host = "${dependency.eks.outputs.cluster_endpoint}"
-  cluster_ca_certificate = base64decode("${dependency.eks.outputs.cluster_ca_certificate}")
-
-  exec {
-    api_version = "client.authentication.k8s.io/v1"
-    command     = "aws"
-
-    args = [
-      "eks",
-      "get-token",
-      "--cluster-name",
-      "${dependency.eks.outputs.cluster_id}",
-      "--region",
-      "${local.aws_region}",
-      "--role",
-      "arn:aws:iam::${local.aws_account_id}:role/${local.assume_role_name}",
-    ]
+provider "helm" {
+  kubernetes = {
+    host                   = "${dependency.eks.outputs.cluster_endpoint}"
+    cluster_ca_certificate = base64decode("${dependency.eks.outputs.cluster_ca_certificate}")
+    exec = {
+      api_version = "client.authentication.k8s.io/v1"
+      args = [
+        "eks",
+        "get-token",
+        "--cluster-name",
+        "${local.cluster_name}",
+        "--region",
+        "${local.aws_region}",
+        "--role",
+        "arn:aws:iam::${local.aws_account_id}:role/${local.assume_role_name}"
+      ]
+      command = "aws"
+    }
   }
 }
 EOF

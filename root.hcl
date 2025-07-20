@@ -28,33 +28,6 @@ provider "aws" {
 EOF
 }
 
-generate "provider_helm" {
-  path      = "provider_helm.tf"
-  if_exists = "overwrite_terragrunt"
-  contents  = <<EOF
-provider "helm" {
-  kubernetes {
-    host                   = var.cluster_endpoint
-    cluster_ca_certificate = base64decode(var.cluster_ca_certificate)
-    exec {
-      api_version = "client.authentication.k8s.io/v1"
-      args = [
-        "eks",
-        "get-token",
-        "--cluster-name",
-        "${local.cluster_name}",
-        "--region",
-        "${local.aws_region}",
-        "--role",
-        "arn:aws:iam::${local.aws_account_id}:role/${local.assume_role_name}",
-      ]
-      command = "aws"
-    }
-  }
-}
-EOF
-}
-
 remote_state {
   backend = "s3"
   config = {
