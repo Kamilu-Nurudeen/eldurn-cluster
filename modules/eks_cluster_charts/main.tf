@@ -14,3 +14,10 @@ module "ebs_csi_driver" {
   ebs_csi_driver_chart_version = var.ebs_csi_driver_chart_version
   ebs_csi_driver_repository    = var.ebs_csi_driver_repository
 }
+
+module "metric_server" {
+  source                           = "git@github.com:Kamilu-Nurudeen/eldurn-cluster.git//modules/metric-server"
+  metric_server_helm_chart_version = var.metric_server_helm_chart_version
+  metric_server_helm_repository    = var.metric_server_helm_repository
+  metric_server_resources          = var.metric_server_resources
+}

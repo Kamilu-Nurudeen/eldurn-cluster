@@ -35,3 +35,22 @@ variable "ebs_csi_driver_repository" {
   description = "ebs csi driver docker repository"
   default     = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
 }
+
+variable "metric_server_helm_repository" {
+  type        = string
+  description = "metric server helm repository"
+  default     = "https://kubernetes-sigs.github.io/metrics-server"
+}
+
+variable "metric_server_helm_chart_version" {
+  type        = string
+  description = "metric server helm chart version"
+  default     = "3.12.2"
+}
+
+variable "metric_server_resources" {
+  type = map(object({
+    cpu    = string
+    memory = string
+  }))
+}
