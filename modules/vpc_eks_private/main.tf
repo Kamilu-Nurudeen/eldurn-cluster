@@ -1,9 +1,6 @@
 locals {
   nat_gateway_count = length(var.azs)
 
-  # Existing IPv6 prefix assignment (for reference only). 
-  # private_subnet_ipv6_prefixes = [0, 1, 2, 3], public_subnet_ipv6_prefixes  = [4, 5, 6, 7]
-
   private_subnet_ipv6_prefixes = range(length(var.private_subnet_ipv6_prefixes) + length(var.public_subnet_ipv6_prefixes),
   length(var.private_subnet_ipv6_prefixes) + length(var.public_subnet_ipv6_prefixes) + length(var.rfc6598_subnets))
 }

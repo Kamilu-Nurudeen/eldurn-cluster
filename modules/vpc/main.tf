@@ -16,10 +16,6 @@ locals {
 
   secondary_cidr_blocks = var.rfc6598_subnets != "" ? concat([var.public_cidr], var.rfc6598_subnets) : [var.public_cidr]
 
-  # Supports prefixes that were assigned in existing eks clusters.
-  # Comments below are for legacy reference
-  # private_subnet_ipv6_prefixes = [0, 1, 2, 3]
-  # public_subnet_ipv6_prefixes  = [4, 5, 6, 7]
   private_subnet_ipv6_prefixes = range(local.azs_count)
   public_subnet_ipv6_prefixes  = range(local.azs_count, 2 * local.azs_count)
 }
@@ -72,7 +68,6 @@ module "vpc" {
 }
 
 module "vpc_eks_private" {
-  #source = "../vpc_eks_private"
   source = "git::https://github.com/Kamilu-Nurudeen/eldurn-cluster.git//modules/vpc_eks_private"
 
   name   = var.name

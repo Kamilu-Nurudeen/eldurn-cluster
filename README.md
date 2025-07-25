@@ -3,27 +3,44 @@ The Terraform/Terragrunt Repository for Managing Eldurn EKS clusters' Infrastruc
 
 ## Overview
 
-This repository contains Terraform modules and Terragrunt configurations for managing AWS infrastructure, including EKS clusters, VPC networking, and domain management for the Eldurn platform.
+This repository contains Terraform modules and Terragrunt configurations for managing AWS infrastructure, including EKS clusters, VPC networking, and supporting services for the Eldurn platform.
 
 ## Architecture
 
 ```
 eldurn-cluster/
+├── README.md               # Repository documentation
+├── root.hcl                # Root Terragrunt configuration file
+├── common/                 # Shared Terragrunt configuration files for modules and environments
 ├── modules/
-│   ├── eks/           # EKS cluster with managed node groups
-│   ├── vpc/           # VPC with public/private subnets
-│   ├── vpc_eks_private/ # Private VPC for EKS clusters
-│   ├── domain/        # Main domain hosted zone and certificate
-│   └── certificate-data/ # Certificate data for environments
+│   ├── eks/                 # EKS cluster with managed node groups
+│   ├── vpc/                 # VPC with public/private subnets
+│   ├── vpc_eks_private/     # Private VPC for EKS clusters
+│   ├── argo-rollout/        # Argo Rollouts controller deployment
+│   ├── eks_cluster_charts/  # Helm charts for EKS cluster add-ons
+│   ├── karpenter/           # Karpenter autoscaler deployment
+│   ├── karpenter-configs/   # Karpenter configuration resources
+│   ├── metric-server/       # Kubernetes metrics server deployment
+│   ├── ebs-csi-driver/      # EBS CSI driver for dynamic volume provisioning
+│   └── aws-alb/             # AWS Application Load Balancer resources
 └── infra/
     └── testing/
         └── eu-north-1/
             └── testing-eun1-1/
-                ├── eks/        # EKS cluster configuration
-                ├── vpc/        # VPC configuration
-                ├── domain/     # Main domain configuration
-                └── certificate-data/ # Certificate data configuration
+                ├── eks/                # EKS cluster configuration
+                ├── vpc/                # VPC configuration
+                ├── argo-rollout/       # Argo Rollouts configuration
+                └── eks_cluster_charts/ # EKS cluster add-ons configuration
 ```
+
+## Top-Level Files
+
+- `README.md`: Provides documentation and usage instructions for the repository.
+- `root.hcl`: The root Terragrunt configuration file, used to define global settings and inputs for the infrastructure codebase.
+
+## Common Folder
+
+The `common/` directory contains shared Terragrunt configuration files (e.g., `eks.hcl`, `vpc.hcl`, `argo-rollout.hcl`, etc.) that define reusable settings and inputs for modules and environments. These files help standardize configuration and reduce duplication across the infrastructure codebase.
 
 ## Modules
 
@@ -31,7 +48,6 @@ eldurn-cluster/
 - **Purpose**: Manages EKS clusters with managed node groups
 - **Features**: 
   - Custom networking with VPC CNI
-  - SSL certificates with wildcard support
   - Access management with IAM roles
   - Session Manager integration
   - Comprehensive security groups
@@ -44,38 +60,58 @@ eldurn-cluster/
   - Route tables and security groups
   - RFC6598 subnet support for EKS
 
-### Domain Module
-- **Purpose**: Manages main domain hosted zone and certificate
+### VPC EKS Private Module
+- **Purpose**: Creates a private VPC for EKS clusters
 - **Features**:
-  - One-time hosted zone creation for main domain
-  - SSL certificate for main domain with wildcard support
-  - DNS validation and certificate management
+  - Private subnets only
+  - Enhanced security for sensitive workloads
 
-### Certificate Data Module
-- **Purpose**: Retrieves certificate and zone data for environments
+### Argo Rollout Module
+- **Purpose**: Deploys Argo Rollouts controller for progressive delivery
 - **Features**:
-  - Data source for main domain certificate
-  - Data source for main domain hosted zone
-  - Environment-agnostic certificate access
+  - Blue/green and canary deployment strategies
+  - Integration with EKS
+
+### EKS Cluster Charts Module
+- **Purpose**: Deploys Helm charts for EKS cluster add-ons
+- **Features**:
+  - Centralized management of cluster add-ons (e.g., CoreDNS, kube-proxy)
+
+### Karpenter Module
+- **Purpose**: Deploys Karpenter autoscaler for dynamic node provisioning
+- **Features**:
+  - Automated scaling of EKS worker nodes
+  - Cost-optimized node management
+
+### Karpenter Configs Module
+- **Purpose**: Manages Karpenter configuration resources
+- **Features**:
+  - Provisioner and node pool configuration
+  - Custom scheduling policies
+
+### Metric Server Module
+- **Purpose**: Deploys Kubernetes metrics server
+- **Features**:
+  - Resource metrics for autoscaling
+  - Integration with HPA/VPA
+
+### EBS CSI Driver Module
+- **Purpose**: Deploys the EBS CSI driver for dynamic volume provisioning
+- **Features**:
+  - Dynamic EBS volume management for Kubernetes workloads
+
+### AWS ALB Module
+- **Purpose**: Manages AWS Application Load Balancer resources
+- **Features**:
+  - Ingress controller integration
+  - Load balancing for Kubernetes services
 
 ## Environments
 
 ### Testing Environment
 - **Region**: eu-north-1 (Stockholm)
-- **Main Domain**: hiring.docplanner.com
 - **VPC CIDR**: 10.40.128.0/19 (private), 10.40.160.0/19 (public)
 - **Additional CIDRs**: 100.64.0.0/16, 100.65.0.0/16, 100.66.0.0/16
-
-## Domain Structure
-
-```
-hiring.docplanner.com (Main Domain)
-├── Route53 Hosted Zone (one-time creation)
-├── SSL Certificate (hiring.docplanner.com + *.hiring.docplanner.com)
-└── Environment Access
-    ├── test environment (retrieves certificate data)
-    └── prod environment (retrieves certificate data)
-```
 
 ## Usage
 
@@ -86,41 +122,39 @@ hiring.docplanner.com (Main Domain)
 
 ### Deploying Infrastructure
 
-1. **Domain Setup** (One-time):
-   ```bash
-   cd infra/testing/eu-north-1/testing-eun1-1/domain
-   terragrunt plan
-   terragrunt apply
-   ```
-
-2. **VPC Deployment**:
+1. **VPC Deployment**:
    ```bash
    cd infra/testing/eu-north-1/testing-eun1-1/vpc
    terragrunt plan
    terragrunt apply
    ```
 
-3. **EKS Cluster Deployment**:
+2. **EKS Cluster Deployment**:
    ```bash
    cd infra/testing/eu-north-1/testing-eun1-1/eks
    terragrunt plan
    terragrunt apply
    ```
 
-### Domain Setup
+3. **Argo Rollout Deployment**:
+   ```bash
+   cd infra/testing/eu-north-1/testing-eun1-1/argo-rollout
+   terragrunt plan
+   terragrunt apply
+   ```
 
-To create the main domain infrastructure:
-1. Deploy the domain module: `cd eldurn-cluster/infra/testing/eu-north-1/testing-eun1-1/domain && terragrunt apply`
-2. Deploy the certificate data module: `cd eldurn-cluster/infra/testing/eu-north-1/testing-eun1-1/certificate-data && terragrunt apply`
-
-The domain module creates the hosted zone and certificate for `hiring.docplanner.com` (one-time), and the certificate data module retrieves this information for environments to use.
+4. **EKS Cluster Add-ons Deployment**:
+   ```bash
+   cd infra/testing/eu-north-1/testing-eun1-1/eks_cluster_charts
+   terragrunt plan
+   terragrunt apply
+   ```
 
 ## Configuration
 
 ### Environment Variables
 - `environment`: Environment name (testing, production)
 - `aws_region`: AWS region for deployment
-- `domain_name`: Main domain name (hiring.docplanner.com)
 
 ### Tags
 All resources are tagged with:
@@ -138,11 +172,10 @@ All resources are tagged with:
 - IAM roles for service accounts (IRSA)
 - Custom security groups with specific port rules
 
-### Domain Security
-- DNS-based certificate validation
-- Wildcard SSL certificates
-- Proper zone delegation
-- Comprehensive resource tagging
+### General Security
+- Proper resource tagging
+- Least privilege IAM roles
+- VPC flow logs for network monitoring
 
 ## Monitoring and Logging
 
@@ -155,9 +188,8 @@ All resources are tagged with:
 
 ### Infrastructure Monitoring
 - CloudWatch metrics for EKS
-- Route53 health checks (configurable)
-- ACM certificate monitoring
-
+  
+  
 ## Best Practices
 
 ### Infrastructure
@@ -165,12 +197,6 @@ All resources are tagged with:
 - Implement proper tagging for cost tracking
 - Use private subnets for sensitive workloads
 - Enable encryption at rest and in transit
-
-### Domain Management
-- Register domain only once
-- Use DNS validation for certificates
-- Implement proper zone delegation
-- Monitor certificate expiration
 
 ### Security
 - Follow least privilege principle
